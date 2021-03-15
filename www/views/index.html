@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style type="text/css">
+        .datepicker td, .datepicker th {
+            width: 1.5em;
+            height: 1.5em;
+        }
+    </style>
+
+    <title>URL Shortner</title>
+</head>
+<body onload="init()">
+<div class="container">
+    <div class="row align-items-center">
+        <div class="col">
+            <form>
+                <div class="form-group row">
+                    <label for="inputUrl" class="col-sm-2 col-form-label">URL</label>
+                    <div class="col-sm-10">
+                        <input type="url" class="form-control" id="inputUrl" placeholder="URL">
+                    </div>
+                </div>
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="show-hide-custom-hook">
+                    <label class="custom-control-label" for="show-hide-custom-hook">Add Custom Hook</label>
+                </div>
+                <div id="custom-hook-div" class="form-group row d-none">
+                    <label for="custom-hook" class="col-sm-2 col-form-label">Custom Hook</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control custom-switch" id="custom-hook" placeholder="Custom Hook">
+                    </div>
+                </div>
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="show-hide-expiration-date">
+                    <label class="custom-control-label" for="show-hide-expiration-date">Add Expiration Date</label>
+                </div>
+                <div id="expiration-date-div" class="form-group row d-none">
+                    <label for="expiration-date" class="col-sm-2 col-form-label">Expiration Date</label>
+                    <div class="col-sm-10">
+                        <input type="datetime-local" class="form-control custom-switch" id="expiration-date" placeholder="Expiration Date">
+                    </div>
+                </div>
+            </form>
+            <br>
+            <button id="submit-button" type="button" class="btn btn-primary btn-block" disabled>Get Shortened URL</button>
+            <br>
+            <div id="success-card" class="card text-center d-none">
+                <div class="card-header text-white bg-success">
+                    Success
+                </div>
+                <div class="card-body">
+                    <h5 id="success-url" class="card-title"></h5>
+                </div>
+            </div>
+            <div id="fail-card" class="card text-center d-none">
+                <div class="card-header text-white bg-danger">
+                    Error
+                </div>
+                <div class="card-body">
+                    <pre id="error-block" class="card-text"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/js/bootstrap-datepicker.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script>
+    function init(){
+        var today = new Date();
+        var dd = today.getDate();
+        var mm = today.getMonth()+1; //January is 0 so need to add 1 to make it 1!
+        var yyyy = today.getFullYear();
+        var hours = today.getHours();
+        var minutes = today.getMinutes();
+        if(dd<10){
+            dd='0'+dd
+        }
+        if(mm<10){
+            mm='0'+mm
+        }
+        today = yyyy+'-'+mm+'-'+dd+'T'+hours+':'+minutes;
+        document.getElementById("expiration-date").setAttribute("min", today);
+    }
+
+    $('#show-hide-custom-hook').change(function(){
+       var checkboxValue = $(this).prop('checked');
+        if(checkboxValue){
+            document.getElementById("custom-hook-div").classList.remove("d-none");
+            $('#submit-button').prop('disabled',true);
+        }else{
+            document.getElementById("custom-hook-div").classList.add("d-none");
+            document.getElementById("custom-hook").value = "";
+        }
+    });
+
+    $('#show-hide-expiration-date').change(function(){
+        var checkboxValue = $(this).prop('checked');
+        if(checkboxValue){
+            document.getElementById("expiration-date-div").classList.remove("d-none");
+            $('#submit-button').prop('disabled',true);
+        }else{
+            document.getElementById("expiration-date-div").classList.add("d-none");
+            document.getElementById("expiration-date").value = "";
+        }
+    });
+
+    $('#inputUrl').on('input',function(){
+        var disabled = true;
+        if($(this).val() != "") disabled = false;
+
+        if(disabled){
+            $('#submit-button').prop('disabled',true);
+        }else{
+            $('#submit-button').prop('disabled',false);
+        }
+    });
+
+    $('#custom-hook').on('input',function(){
+        var disabled = true;
+        if($('#show-hide-custom-hook').prop('checked') && $(this).val()!= ""){
+            disabled = false;
+        } else{
+            disabled = true;
+        }
+
+        if(disabled){
+            $('#submit-button').prop('disabled',true);
+        }else{
+            $('#submit-button').prop('disabled',false);
+        }
+    });
+
+    $('#expiration-date').on('input',function(){
+        var disabled = true;
+        if($('#show-hide-expiration-date').prop('checked') && $(this).val() != ""){
+            disabled = false;
+        } else{
+            disabled = true;
+        }
+
+        if(disabled){
+            $('#submit-button').prop('disabled',true);
+        }else{
+            $('#submit-button').prop('disabled',false);
+        }
+    });
+
+    $('#submit-button').on('click', function(event) {
+        event.preventDefault();
+
+        var data = {"url":$('#inputUrl').val()};
+
+        if($('#show-hide-custom-hook').prop('checked') && $('#custom-hook').val()!= ""){
+            data.custom_hook = $('#custom-hook').val();
+        }
+
+        if($('#show-hide-expiration-date').prop('checked') && $('#expiration-date').val()!= ""){
+            date = new Date($('#expiration-date').val());
+            data.expiration_date = date.toISOString().slice(0, 19).replace('T', ' ');
+        }
+
+        document.getElementById("success-card").classList.add("d-none");
+        document.getElementById("fail-card").classList.add("d-none");
+
+        console.log(data);
+
+        $.ajax({
+            type: "POST",
+            url: "/api",
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            dataType: "json",
+            success: function(responseData){
+                document.getElementById("success-card").classList.remove("d-none");
+                $('#success-url').html(responseData.url);
+                console.log(responseData);
+                },
+            error: function(errMsg) {
+                document.getElementById("fail-card").classList.remove("d-none");
+                $('#error-block').html(errMsg.responseJSON.error.message);
+                console.log(errMsg);
+            }
+        });
+    });
+
+    function copyToClipboard() {
+        var copyText = document.getElementById("input");
+        copyText.select();
+        document.execCommand("Copy");
+    }
+
+</script>
+</body>
+</html>

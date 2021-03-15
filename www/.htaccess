@@ -1,0 +1,10 @@
+DirectoryIndex index.php
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+
+	RewriteCond %{REQUEST_URI} ^(/p/[a-zA-Z0-9_]+)?/memcache.*
+    RewriteRule .* test_db.php [L,QSA]
+
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
