@@ -15,7 +15,7 @@ class URLController
     private Request $request;
 
     /**
-     * URLController constructor.
+     * URLController constructor. This also initialized DB
      * @param Request $request
      */
     public function __construct(Request $request)
@@ -25,6 +25,8 @@ class URLController
     }
 
     /**
+     * This function is used to fetch the link details. If details are found in cache, the are returned if not,
+     * details are fetched form the DB. Once fetched, they are saved in cache.
      * @param $urlHook
      * @return array|bool
      * @throws CustomException
@@ -65,6 +67,9 @@ class URLController
     }
 
     /**
+     * This function is used to fetch the URL stats for a hook.
+     * This returns visits, creation date and stats stored in link_stats table.
+     * Caching is not used here as the data returned might be very heavy.
      * @param $urlHook
      */
     public function getURLStats($urlHook){
@@ -112,6 +117,7 @@ class URLController
     }
 
     /**
+     * This returns the key value, that is used to store link in memcache
      * @param $urlHook
      * @return string
      */
@@ -121,6 +127,7 @@ class URLController
     }
 
     /**
+     * This function is used to update the visits counter and add link_stats entry when a shortened URL is used/visited.
      * @param Request $request
      * @param $linkId
      * @throws CustomException
@@ -163,6 +170,7 @@ class URLController
     }
 
     /**
+     * This function is used to change the URL to add http:// before the the URL string.
      * @param $url
      */
     public function getValidRedirectURL(&$url)
@@ -173,6 +181,9 @@ class URLController
     }
 
     /**
+     * This function is used to return a valid hook if nothing is passed.
+     * If a hook is passed, this function verifies length of the hook and if hook is larger than 8, it shortens it to 8 chars.
+     * If hook is less than 8 chars, this function throws an error.
      * @param string|null $customHook
      * @param int $length
      * @return false|string
@@ -196,6 +207,7 @@ class URLController
     }
 
     /**
+     * The function is used to check if a hook exists in the DB.
      * @param $hook
      * @return bool
      * @throws CustomException
@@ -221,6 +233,7 @@ class URLController
     }
 
     /**
+     * This function is used to check if a original_url is already present in the DB
      * @param $url
      * @return bool
      * @throws CustomException
@@ -246,8 +259,12 @@ class URLController
     }
 
     /**
+     * This function is used to create a shortened URL/URLs
      * @param $data
      * @return array
+     * data - This has the urls created or error messages
+     * processedCount - This is number of URL's that are created
+     * errorCount - This is the number of URL's that were failed to be created.
      * @throws Exception
      */
     public function createNewLink($data)
@@ -266,6 +283,7 @@ class URLController
         if(!$checkURLStmt) throw new Exception("Error occurred while preparing statement. ".$stmt->error);
         $checkURLStmt->bind_param("s",$urlInfo);
 
+        // Looping through each URL in array and catching and storing errors in return array.
         foreach ($data as $linkData){
             try{
                 $url = isset($linkData["url"])?$linkData["url"]:null;
@@ -306,6 +324,7 @@ class URLController
     }
 
     /**
+     * This function is used to validate the expiration date. Both for format and to see if date is not from past.
      * @param $date
      * @return string|null
      * @throws Exception
@@ -324,6 +343,8 @@ class URLController
     }
 
     /**
+     * This function is used to verify if the URL valid.
+     * This checks the how well formed the URL is, reachability and most importantly, if ot already exists in the DB.
      * @param $url
      * @return mixed
      * @throws CustomException
@@ -346,6 +367,7 @@ class URLController
     }
 
     /**
+     * This function is used to check the reachability of the URL. A simple curl request is made to the URL to verify it.
      * @param $url
      * @return bool
      */
@@ -364,6 +386,7 @@ class URLController
     }
 
     /**
+     * This function is sued to remove the shortened URl from the DB.
      * @param $hook
      * @return array
      */
@@ -380,7 +403,7 @@ class URLController
                 $stmt->bind_param("s", $hook);
                 if($stmt->execute()){
                     if($stmt->affected_rows > 0){
-                        MemcachedController::getMemCache($this->getMemcacheKeyName($hook));
+                        MemcachedController::deleteMemCache($this->getMemcacheKeyName($hook));
                         $returnArray = array("url"=>$this->getHookBasedUrl($hook));
                         $processedCount++;
                     }else{
@@ -405,6 +428,7 @@ class URLController
     }
 
     /**
+     * This function returns shortened URL based on the servername.
      * @param $hook
      * @return string
      */
@@ -416,6 +440,8 @@ class URLController
     }
 
     /**
+     * This function is used to get the browser name form User-Agent header in HTTP request.
+     * This function was a courtesy of Stackoverflow. (Closed the tab before saving the link)
      * @param $userAgent
      * @return string
      */
@@ -432,6 +458,8 @@ class URLController
     }
 
     /**
+     * This function is used to get the OS form User-Agent header in HTTP request.
+     * This function was a courtesy of Stackoverflow. (Closed the tab before saving the link)
      * @param null $user_agent
      * @return string
      */

@@ -13,7 +13,13 @@ class DatabaseController
 	private static $databasePassword = null;
 	private static $databaseHost = null;
 
-	public static function init($databaseConfigurationName = 'DATABASE_CONF')
+    /**
+     * This function is used to fetch the DB details config file and return a Db connection
+     * @param string $databaseConfigurationName - Location for config file can be set using an ENV variable which can be passed here.
+     * @return mysqli
+     * @throws Exception
+     */
+    public static function init($databaseConfigurationName = 'DATABASE_CONF')
 	{
 		$databaseConfigurationFilename = self::getEnvironmentVariable($databaseConfigurationName, '/var/www/html/config/mysql_config.ini');
 
@@ -40,7 +46,12 @@ class DatabaseController
 		return self::getDbConnection();
 	}
 
-	public static function initialize()
+    /**
+     * This function is used to initialze the DB connection and return Db connection if initialized.
+     * @return mysqli
+     * @throws Exception
+     */
+    public static function initialize()
 	{
 		if (!self::$initialized)
 		{
@@ -50,6 +61,12 @@ class DatabaseController
         }
 	}
 
+    /**
+     * Simple function to get data from ENV variable.
+     * @param $variableName
+     * @param null $default
+     * @return mixed|null
+     */
     private static final function getEnvironmentVariable($variableName, $default = null)
 	{
 		$value = $default;
@@ -58,6 +75,11 @@ class DatabaseController
 		return $value;
     }
 
+    /**
+     * This function is used to make the DB connection and return a healthy connection.
+     * @return mysqli
+     * @throws Exception
+     */
     public static function getDbConnection()
 	{
         mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
