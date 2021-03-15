@@ -68,10 +68,14 @@ $app->get('/app/{url_hook}/stats', function ($request, $response, $args) {
     $urlHook = $args['url_hook'];
 
     $shortenedUrlController = new URLController($request);
-    $viewData = $shortenedUrlController->getURLStats($urlHook);
+    try{
+        $viewData = $shortenedUrlController->getURLStats($urlHook);
+    }catch(Exception $e){
+        // Do nothing
+    }
 
     return $view->render($response, 'stats.twig',$viewData);
-})->setName('home');
+})->setName('stats');
 
 $app->post('/api[/]', function (Request $request, Response $response) use($app) {
     if (strpos('application/json', $request->getHeaderLine("Content-Type")) === false) {
@@ -147,6 +151,7 @@ $app->delete('/api/{url_hook}', function (Request $request, Response $response, 
     $returnData = $data["data"];
 
     $returnData = json_encode($returnData, JSON_PRETTY_PRINT);
+    if(isset($data["data"]["statusCode"])) $returnStatus = $data["data"]["statusCode"];
 
     $response->getBody()->write($returnData);
 

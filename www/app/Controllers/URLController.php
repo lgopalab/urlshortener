@@ -69,10 +69,9 @@ class URLController
      */
     public function getURLStats($urlHook){
 
-        $urlStats = array("visits"=>0,"data"=>array());
-        global $logger;
+        $urlStats = array("visits"=>0,"creation_date"=>"","data"=>array());
         try{
-            $sql = "SELECT id,visits FROM links WHERE BINARY shortened_url=?";
+            $sql = "SELECT id,creation_date,visits FROM links WHERE BINARY shortened_url=?";
             $stmt = self::$mysqli->prepare($sql);
             if(!$stmt) {
                 // Doing nothing
@@ -81,11 +80,13 @@ class URLController
             if($stmt->execute()){
                 $stmt->store_result();
                 if($stmt->num_rows == 1){
-                    $stmt->bind_result($id,$visits);
+                    $stmt->bind_result($id,$created_date,$visits);
                     $stmt->fetch();
                     $urlStats["visits"] = (int)$visits;
+                    $urlStats["creation_date"] = $created_date;
                 }
             }
+            if(!isset($id))throw new Exception("ID is null");
             $id = (int)$id;
 
             $statsSql = "SELECT from_addr, browser_info, referrer, os_info FROM link_stats WHERE BINARY link_id=? LIMIT 100";
@@ -267,7 +268,8 @@ class URLController
 
         foreach ($data as $linkData){
             try{
-                $urlInfo = $this->isURLValid($linkData["url"]);
+                $url = isset($linkData["url"])?$linkData["url"]:null;
+                $urlInfo = $this->isURLValid($url);
                 $hook = isset($linkData["custom_hook"])? $this->getValidHook($linkData["custom_hook"]):$this->getValidHook();
                 $expirationDate = isset($linkData["expiration_date"])? $this->isExpirationDateValid($linkData["expiration_date"]):null;
 
@@ -386,16 +388,16 @@ class URLController
                     }
                 }
             }else{
-                throw new HttpNotFoundException($this->request);
+                throw new Exception("URL not found.");
             }
 
         }catch(Exception $e){
-            if(strpos($e->getMessage(),"Invalid parameter") !== false)
-                $returnArray[] = array("statusCode"=>400,"error"=>array("type"=>"INVALID_PARAMETER","message"=>$e->getMessage()));
+            if(strpos($e->getMessage(),"not found") !== false)
+                $returnArray = array("statusCode"=>404,"error"=>array("type"=>"NOT_FOUND","message"=>$e->getMessage()));
             else if(strpos($e->getMessage(),"statement") !== false)
-                $returnArray[] = array("statusCode"=>500,"error"=>array("type"=>"SERVER_ERROR","message"=>$e->getMessage()));
+                $returnArray = array("statusCode"=>500,"error"=>array("type"=>"SERVER_ERROR","message"=>$e->getMessage()));
             else
-                $returnArray[] = array("statusCode"=>500,"error"=>array("type"=>"SERVER_ERROR","message"=>$e->getMessage()));
+                $returnArray = array("statusCode"=>500,"error"=>array("type"=>"SERVER_ERROR","message"=>$e->getMessage()));
             $errorCount++;
         }
 
