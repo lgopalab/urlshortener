@@ -65,7 +65,16 @@ When an invalid hook is passed in url say **http://localhost/app/{invalid_hook}/
 <img width="1179" alt="Screen Shot 2021-03-15 at 1 14 53 PM" src="https://user-images.githubusercontent.com/17258137/111193349-746cbc00-8590-11eb-9916-8fb981693fc6.png">
 
 ## Link Redirection
-Making any kind of request (GET, DELETE, POST, PUT, PATCH, OPTIONS) to http://localhost/{hook} would redirect to original specified URL. This will also cache the url details, so as to avoid backend DB to call to fetch the URL details. 
+Making any kind of request (GET, DELETE, POST, PUT, PATCH, OPTIONS) to http://localhost/{hook} would redirect to original specified URL. This will also cache the url details, so as to avoid backend DB to call to fetch the URL details. If the hook is expired, you will get the following error with status **410 Gone**
+
+    {
+        "statusCode": 410,
+        "error": {
+            "type": "EXPIRED_URL",
+            "message": "Shortened URL Expired"
+        }
+    }
+
 
 # API
 Now the fun part, the API. The API has 3 endpoints and their functionality is as follows.
