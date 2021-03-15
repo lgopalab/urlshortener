@@ -23,6 +23,17 @@ Hurray! The URL Shortener service is up and running. (If not, please create an i
 
 
 # Web Application
+
+## DB Structure
+The application connects a DB schema called **url_shortner**
+This DB Schema has two tables 
+1. **links**
+![Screen Shot 2021-03-15 at 6 09 06 PM](https://user-images.githubusercontent.com/17258137/111227840-90388800-85b9-11eb-86a8-59de78a77721.png)
+2. **link_stats**
+![Screen Shot 2021-03-15 at 6 10 04 PM](https://user-images.githubusercontent.com/17258137/111227905-b3fbce00-85b9-11eb-89c7-3a2a84267b5f.png)
+
+**link_stats.link_id** has a FOREIGN_KEY Constraint pointing to **links.id** and ON DELETE CASCADE is set which means all the link_stats entries related to a specific links.id will be removed when that link is deleted.
+
 ## Link Creation
 The URL Shortener web application can be accessed by **http://localhost/app**
 
